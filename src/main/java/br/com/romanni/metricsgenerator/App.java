@@ -45,12 +45,16 @@ public class App {
     }
 
     /*
-    showCostumerStatisticsFilteredBySignature(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL);
-    showCostumerStatisticsFilteredBySignature(costumers, SignatureLevel.PRIME_PLUS_MOVT);
-    showCostumerStatisticsFilteredBySignature(costumers, SignatureLevel.GRUPO_VIRTUDE);
-    showCostumerStatisticsFilteredBySignature(costumers, SignatureLevel.PRIME);*/
+    showCostumerCountFilteredBySignature(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL);
+    showCostumerCountFilteredBySignature(costumers, SignatureLevel.PRIME_PLUS_MOVT);
+    showCostumerCountFilteredBySignature(costumers, SignatureLevel.GRUPO_VIRTUDE);
+    showCostumerCountFilteredBySignature(costumers, SignatureLevel.PRIME);*/
 
-    showSignaturesInRecover(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL);
+    showData(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL);
+    showData(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL);
+    showData(costumers, SignatureLevel.GRUPO_VIRTUDE);
+    showData(costumers, SignatureLevel.PRIME);
+    showData(costumers, SignatureLevel.PRIME_PLUS_MOVT);
 
     Duration duration = Duration.between(initialDate, LocalDateTime.now());
 
@@ -58,12 +62,17 @@ public class App {
     System.out.println(String.format("\n%d segundos e %d nanosegundos.\n\n", duration.getSeconds(), duration.getNano()));
   }
 
-  private static void showCostumerStatisticsFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {
+  private static void showData(List<Costumer> costumers, SignatureLevel signatureLevel) {
+    showCostumerCountFilteredBySignature(costumers, signatureLevel);
+    showSignaturesInRecover(costumers, signatureLevel);
+  }
+
+  private static void showCostumerCountFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {
     final var costumersFiltered = costumers.stream()
             .filter(c -> c.getSignatureLevel().equals(signatureLevel))
             .toList();
 
-    System.out.println(String.format("%s -> { members: %d }",signatureLevel, costumersFiltered.size()));
+    System.out.println(String.format("%s -> { total members: %d }",signatureLevel, costumersFiltered.size()));
   }
 
   private static void showSignaturesInRecover(List<Costumer> costumers, SignatureLevel signatureLevel) {
@@ -71,9 +80,18 @@ public class App {
             .filter(c -> c.getSignatureLevel().equals(signatureLevel))
             .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate()))
             .toList();
-    costumersFiltered.forEach(costumer -> System.out.println("ExpirationDate = " + costumer.getExpirationDate()));
-    System.out.println(String.format("%s -> { members: %d }",signatureLevel, costumersFiltered.size()));
+
+    System.out.println(String.format("%s -> { members in expiration date: %d }",signatureLevel, costumersFiltered.size()));
   }
+
+  /*
+  os que são novos create date
+  %venda nova data criação = data de criação  + 1 ano = data expiração.
+
+  % de renovação e numero de renovação
+  (data expiração - data atual)
+  1 ano ou 11 meses
+  * */
 
 
 }
