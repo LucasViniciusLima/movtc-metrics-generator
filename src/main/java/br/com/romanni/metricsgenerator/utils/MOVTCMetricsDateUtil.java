@@ -1,6 +1,8 @@
 package br.com.romanni.metricsgenerator.utils;
 
 
+import br.com.romanni.metricsgenerator.models.Costumer;
+
 import java.time.LocalDateTime;
 
 public class MOVTCMetricsDateUtil {
@@ -23,5 +25,9 @@ public class MOVTCMetricsDateUtil {
 
     public static boolean isTheSameDay(LocalDateTime date) {
         return actualDate.getDayOfMonth() == date.getDayOfMonth();
+    }
+
+    public static boolean isSignatureFirstYear(Costumer costumer) {
+        return (actualDate.getYear() - costumer.getCreatedDate().getYear()) < 2;
     }
 }
