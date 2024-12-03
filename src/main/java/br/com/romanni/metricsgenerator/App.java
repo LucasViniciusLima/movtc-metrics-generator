@@ -8,6 +8,8 @@ import br.com.romanni.metricsgenerator.utils.MOVTCMetricsDateUtil;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -21,6 +23,8 @@ public class App {
 
   public static void main(String[] args) throws IOException {
     LocalDateTime initialDate = LocalDateTime.now();
+
+    MyFrame myFrame = new MyFrame();
 
     List<Costumer> costumers = getCostumersFromFile("src/main/resources/assinantes.csv");
 
@@ -57,6 +61,8 @@ public class App {
     showSignaturesInRecoverFirstYear(costumers, signatureLevel);
     showSignaturesInRecoverNotFirstYear(costumers, signatureLevel);
     showSignaturesInRecover(costumers, signatureLevel);
+    showSignaturesRecentRenewed(costumers, signatureLevel);
+    showSignaturesRecentPurchases(costumers, signatureLevel);
   }
 
   private static void showCostumerCountFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {
@@ -64,7 +70,7 @@ public class App {
             .filter(c -> c.getSignatureLevel().equals(signatureLevel))
             .toList();
 
-    System.out.println(String.format("Total members: %d", costumersFiltered.size()));
+    System.out.println(String.format("Total de membros: %d", costumersFiltered.size()));
   }
 
   private static void showSignaturesInRecover(List<Costumer> costumers, SignatureLevel signatureLevel) {
@@ -73,7 +79,7 @@ public class App {
             .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate()))
             .toList();
 
-    System.out.println(String.format("Total Members in expiration date: %d", costumersFiltered.size()));
+    System.out.println(String.format("Total de membros com renovação próxima: %d", costumersFiltered.size()));
   }
 
   private static void showSignaturesInRecoverNotFirstYear(List<Costumer> costumers, SignatureLevel signatureLevel) {
@@ -83,7 +89,7 @@ public class App {
             .filter(c -> !MOVTCMetricsDateUtil.isSignatureFirstYear(c))
             .toList();
 
-    System.out.println(String.format("Members in expiration, not first purchase date: %d", costumersFiltered.size()));
+    System.out.println(String.format("Membros antigos com renovação próxima: %d", costumersFiltered.size()));
   }
 
   private static void showSignaturesInRecoverFirstYear(List<Costumer> costumers, SignatureLevel signatureLevel) {
@@ -93,11 +99,33 @@ public class App {
             .filter(c -> MOVTCMetricsDateUtil.isSignatureFirstYear(c))
             .toList();
 
-    System.out.println(String.format("First signature time, members in expiration date: %d", costumersFiltered.size()));
+    //costumersFiltered.forEach(c -> System.out.println(String.format("criação = %s, expiration = %s",c.getCreatedDate(), c.getExpirationDate())));
+    System.out.println(String.format("Membros novos (primeiro ano) com renovação próxima: %d", costumersFiltered.size()));
+  }
+
+  private static void showSignaturesRecentRenewed(List<Costumer> costumers, SignatureLevel signatureLevel) {
+    final var costumersFiltered = costumers.stream()
+            .filter(c -> c.getSignatureLevel().equals(signatureLevel))
+            .filter(c -> (c.getExpirationDate()!=null && MOVTCMetricsDateUtil.isRecentRenewed(c)))
+            .toList();
+
+    costumersFiltered.forEach(c -> System.out.println(String.format("criação = %s, expiration = %s",c.getCreatedDate(), c.getExpirationDate())));
+    System.out.println(String.format("Renovações (antigos) efetuadas: %d", costumersFiltered.size()));
+  }
+
+  private static void showSignaturesRecentPurchases(List<Costumer> costumers, SignatureLevel signatureLevel) {
+    final var costumersFiltered = costumers.stream()
+            .filter(c -> c.getSignatureLevel().equals(signatureLevel))
+            .filter(c -> (c.getExpirationDate()!=null && MOVTCMetricsDateUtil.isRecentPurchase(c)))
+            .toList();
+
+    costumersFiltered.forEach(c -> System.out.println(String.format("criação = %s, expiration = %s",c.getCreatedDate(), c.getExpirationDate())));
+    System.out.println(String.format("Novas vendas efetuadas: %d", costumersFiltered.size()));
   }
 
   /*
-
+  Vendas novas(data expiração - data atual)
+  Renovações já efetuadas (data expiração - data atual & create date +1ano),
   % de renovação e numero de renovação
   (data expiração - data atual)
   1 ano ou 11 meses
