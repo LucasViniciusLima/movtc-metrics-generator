@@ -1,13 +1,17 @@
 package br.com.romanni.metricsgenerator;
 
+import br.com.romanni.metricsgenerator.business.DataProcess;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class MyFrame extends JFrame implements ActionListener {
 
     JButton button;
+    DataProcess dataProcess = new DataProcess();
 
     public MyFrame() {
         this.setTitle("Metrics Generator");
@@ -40,14 +44,24 @@ public class MyFrame extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if(e.getSource()==this.button){
+        this.handleButtonAction(e);
+    }
+
+    private void handleButtonAction(ActionEvent e) {
+        if (e.getSource() != this.button) return;
+
+        try {
             JFileChooser fileChooser = new JFileChooser();
 
             int response = fileChooser.showOpenDialog(null);
-            if(response==JFileChooser.APPROVE_OPTION){
-                var path =fileChooser.getSelectedFile().getAbsolutePath();
+            if (response == JFileChooser.APPROVE_OPTION) {
+                var path = fileChooser.getSelectedFile().getAbsolutePath();
                 System.out.println(path);
+                this.dataProcess.processCSV(path);
             }
+        } catch (IOException ex) {
+            System.out.println(ex.getMessage());
         }
+
     }
 }
