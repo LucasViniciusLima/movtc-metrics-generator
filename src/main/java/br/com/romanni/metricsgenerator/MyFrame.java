@@ -16,30 +16,39 @@ public class MyFrame extends JFrame implements ActionListener {
     public MyFrame() {
         this.setTitle("Metrics Generator");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(500, 300);
-        this.setLayout(new FlowLayout());
+        this.setSize(500, 200);
+        this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
-        this.add(this.generateLabel());
+        JLabel label = this.generateLabel();
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        button = new JButton("Selecionar arquivo");
-        button.addActionListener(this);
-        button.setSize(100, 50);
-        button.setHorizontalAlignment(SwingConstants.CENTER);
-        button.setVerticalAlignment(SwingConstants.CENTER);
+        this.add(Box.createRigidArea(new Dimension(0,30)));
+        this.add(label);
 
+        generateJButton();
+
+        this.add(Box.createRigidArea(new Dimension(0,20)));
         this.add(button);
-        this.pack();
+
         this.setVisible(true);
     }
 
     private JLabel generateLabel() {
         JLabel label = new JLabel();
         label.setText("Selecione o arquivo para gerar as métricas!");
-        label.setVerticalTextPosition(SwingConstants.TOP);
-        label.setHorizontalTextPosition(SwingConstants.CENTER);
+        label.setFont(new Font("Arial", Font.BOLD, 22));
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setVerticalAlignment(SwingConstants.CENTER);
         return label;
+    }
+
+    public void generateJButton() {
+        button = new JButton("Selecionar arquivo");
+        button.addActionListener(this);
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setFont(new Font("Arial", Font.BOLD, 18));
+        button.setBackground(new Color(255, 140, 0));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
     }
 
     @Override

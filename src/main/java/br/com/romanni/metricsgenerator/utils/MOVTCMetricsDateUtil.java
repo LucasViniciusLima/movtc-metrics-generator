@@ -6,6 +6,7 @@ import br.com.romanni.metricsgenerator.models.Costumer;
 import java.time.LocalDateTime;
 
 public class MOVTCMetricsDateUtil {
+
     private static LocalDateTime actualDate = LocalDateTime.now().minusMonths(1);//fixme
 
 
@@ -57,5 +58,7 @@ public class MOVTCMetricsDateUtil {
         return expirationDate.getMonth() == creationDate.getMonth();
     }
 
-
+    public static LocalDateTime getActualDate() {
+        return actualDate;
+    }
 }

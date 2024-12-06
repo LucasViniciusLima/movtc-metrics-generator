@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.StreamSupport;
 
 public class DataProcess {
@@ -51,7 +53,13 @@ public class DataProcess {
     }
 
     private void showData(List<Costumer> costumers, SignatureLevel signatureLevel) {
+        String monthBr = MOVTCMetricsDateUtil
+                .getActualDate()
+                .getMonth()
+                .getDisplayName(TextStyle.FULL, new Locale("pt", "BR"));
+
         System.out.println(String.format("\n\n%s", signatureLevel));
+        System.out.println(String.format("\nMês de %s", monthBr));
         
         var totalCostumerList = getCostumerFilteredBySignature(costumers, signatureLevel);
         System.out.println(String.format("Total de membros: %d", totalCostumerList.size()));
@@ -70,7 +78,9 @@ public class DataProcess {
         
         var recentPurchasesList = getSignaturesRecentPurchases(costumers, signatureLevel);
         System.out.println(String.format("Novas vendas efetuadas: %d", recentPurchasesList.size()));
-        
+
+        var signatureRenewPercent = getSignaturesRenewPercent(inRecoverTotalSignaturesList.size(), renewedSignaturesList.size());
+        System.out.println("Porcentagem de renovações: "+ signatureRenewPercent);
     }
 
     private List<Costumer> getCostumerFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {
@@ -113,4 +123,14 @@ public class DataProcess {
                 .filter(c -> (c.getExpirationDate()!=null && MOVTCMetricsDateUtil.isRecentPurchase(c)))
                 .toList();
     }
+
+    private double getSignaturesRenewPercent(int openSignatures, int renewedSignatures) {
+        double totalSignatures = (double) openSignatures + (double) renewedSignatures;
+
+        if (totalSignatures <= 0) {
+            return 0.0;
+        }
+        return (renewedSignatures * 100) / totalSignatures;
+    }
+
 }
