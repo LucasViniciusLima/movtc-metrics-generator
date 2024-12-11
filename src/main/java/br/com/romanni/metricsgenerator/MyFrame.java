@@ -1,6 +1,7 @@
 package br.com.romanni.metricsgenerator;
 
 import br.com.romanni.metricsgenerator.business.DataProcess;
+import net.sf.jasperreports.engine.JRException;
 
 import javax.swing.*;
 import java.awt.*;
@@ -69,6 +70,8 @@ public class MyFrame extends JFrame implements ActionListener {
                 this.dataProcess.processCSV(path);
             }
         } catch (IOException ex) {
+            System.out.println(ex.getMessage());
+        } catch (JRException ex) {
             System.out.println(ex.getMessage());
         }
 

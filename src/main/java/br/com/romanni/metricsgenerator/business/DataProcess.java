@@ -4,7 +4,9 @@ import br.com.romanni.metricsgenerator.enums.Headers;
 import br.com.romanni.metricsgenerator.enums.SignatureLevel;
 import br.com.romanni.metricsgenerator.factories.CostumerFactory;
 import br.com.romanni.metricsgenerator.models.Costumer;
+import br.com.romanni.metricsgenerator.models.MetricBO;
 import br.com.romanni.metricsgenerator.utils.MOVTCMetricsDateUtil;
+import net.sf.jasperreports.engine.JRException;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
@@ -20,7 +22,7 @@ import java.util.stream.StreamSupport;
 
 public class DataProcess {
 
-    public void processCSV(String fileName) throws IOException {
+    public void processCSV(String fileName) throws IOException, JRException {
         LocalDateTime initialDate = LocalDateTime.now();
 
         List<Costumer> costumers = getCostumersFromFile(fileName);
@@ -52,7 +54,8 @@ public class DataProcess {
                 .toList();
     }
 
-    private void showData(List<Costumer> costumers, SignatureLevel signatureLevel) {
+    //fixme wriite data or change the intention of the method
+    private void showData(List<Costumer> costumers, SignatureLevel signatureLevel) throws JRException {
         String monthBr = MOVTCMetricsDateUtil
                 .getActualDate()
                 .getMonth()
@@ -81,6 +84,19 @@ public class DataProcess {
 
         var signatureRenewPercent = getSignaturesRenewPercent(inRecoverTotalSignaturesList.size(), renewedSignaturesList.size());
         System.out.println("Porcentagem de renovações: "+ signatureRenewPercent);
+
+        final var metricBO =  new MetricBO(
+                monthBr,
+                signatureLevel.toString(),
+                totalCostumerList.size(),
+                inRecoverFirstYearList.size(),
+                inRecoverNotFirstYearList.size(),
+                inRecoverTotalSignaturesList.size(),
+                renewedSignaturesList.size(),
+                recentPurchasesList.size(),
+                signatureRenewPercent);
+
+        DataPDFGenerator.generatePDF(metricBO);
     }
 
     private List<Costumer> getCostumerFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {
