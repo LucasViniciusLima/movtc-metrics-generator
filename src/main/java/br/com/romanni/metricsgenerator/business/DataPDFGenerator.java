@@ -1,5 +1,6 @@
 package br.com.romanni.metricsgenerator.business;
 
+import br.com.romanni.metricsgenerator.models.ChartData;
 import br.com.romanni.metricsgenerator.models.MetricBO;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.util.JRLoader;
@@ -8,6 +9,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DataPDFGenerator {
@@ -33,10 +35,13 @@ public class DataPDFGenerator {
 
         //fixme refactor all this shit
 
-/*
+
         List<ChartData> chartDataList = List.of(
           new ChartData("Vendas efetuadas", metricBO.porcentagemRenovacoes()),
           new ChartData("Pendentes", (100-metricBO.porcentagemRenovacoes())));
+        params.put("chartDataList", chartDataList);
+
+        /*
 
         //JRBeanCollectionDataSource mainDataSource = new JRBeanCollectionDataSource(chartDataList);
         JRBeanCollectionDataSource chartDataSource = new JRBeanCollectionDataSource(chartDataList);
@@ -44,6 +49,8 @@ public class DataPDFGenerator {
 */
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasReport, params, new JREmptyDataSource());
         //fixme mudar path
-        JasperExportManager.exportReportToPdfFile(jasperPrint, "/home/lucasbezerra/Downloads/unfinished/relatorio-"+metricBO.signature()+".pdf");
+        final var windowspath =  "D:\\Documents\\jasper-oldfiles\\relatorio-"+metricBO.signature()+".pdf";
+        final var linuxpath = "/home/lucasbezerra/Downloads/unfinished/relatorio-"+metricBO.signature()+".pdf";
+        JasperExportManager.exportReportToPdfFile(jasperPrint, windowspath);
     }
 }
