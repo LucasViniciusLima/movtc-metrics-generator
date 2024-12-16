@@ -7,9 +7,14 @@ import br.com.romanni.metricsgenerator.models.Costumer;
 import br.com.romanni.metricsgenerator.models.MetricBO;
 import br.com.romanni.metricsgenerator.utils.MOVTCMetricsDateUtil;
 import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.export.JRPdfExporter;
+import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -27,11 +32,19 @@ public class DataProcess {
 
         List<Costumer> costumers = getCostumersFromFile(fileName);
 
-        showData(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL);
-        showData(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL);
-        showData(costumers, SignatureLevel.GRUPO_VIRTUDE);
-        showData(costumers, SignatureLevel.PRIME);
-        showData(costumers, SignatureLevel.PRIME_PLUS_MOVT);
+        var jaspersPrints = List.of(
+        showData(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
+        showData(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
+        showData(costumers, SignatureLevel.GRUPO_VIRTUDE),
+        showData(costumers, SignatureLevel.PRIME),
+        showData(costumers, SignatureLevel.PRIME_PLUS_MOVT));
+
+        JRPdfExporter exporter = new JRPdfExporter();
+        exporter.setExporterInput(SimpleExporterInput.getInstance(jaspersPrints)); // Adiciona os JasperPrints
+        exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(new FileOutputStream("combined_report.pdf")));
+
+        // Exportar para PDF
+        exporter.exportReport();
 
         Duration duration = Duration.between(initialDate, LocalDateTime.now());
 
@@ -55,7 +68,7 @@ public class DataProcess {
     }
 
     //fixme wriite data or change the intention of the method
-    private void showData(List<Costumer> costumers, SignatureLevel signatureLevel) throws JRException {
+    private JasperPrint showData(List<Costumer> costumers, SignatureLevel signatureLevel) throws JRException {
         String monthBr = MOVTCMetricsDateUtil
                 .getActualDate()
                 .getMonth()
@@ -96,7 +109,7 @@ public class DataProcess {
                 recentPurchasesList.size(),
                 signatureRenewPercent);
 
-        DataPDFGenerator.generatePDF(metricBO);
+        return DataPDFGenerator.generatePDF(metricBO);
     }
 
     private List<Costumer> getCostumerFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {

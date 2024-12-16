@@ -43,7 +43,7 @@
 		</band>
 	</title>
 	<pageHeader>
-		<band height="249">
+		<band height="155">
 			<textField>
 				<reportElement x="0" y="10" width="150" height="30" uuid="ac6f9dff-ffc9-449f-a89b-59430f08b77e"/>
 				<box topPadding="7" leftPadding="5" bottomPadding="7" rightPadding="5">
@@ -116,12 +116,15 @@
 			</textField>
 			<pieChart>
 				<chart isShowLegend="false">
-					<reportElement mode="Opaque" x="490" y="10" width="210" height="110" backcolor="#CCCCCC" uuid="06e6cd43-de11-42da-88d1-2aefdadb6e41"/>
+					<reportElement mode="Opaque" x="490" y="0" width="280" height="155" backcolor="#FFFFFF" uuid="06e6cd43-de11-42da-88d1-2aefdadb6e41"/>
+					<box padding="10"/>
 					<chartTitle>
 						<titleExpression><![CDATA["Renovações"]]></titleExpression>
 					</chartTitle>
 					<chartSubtitle/>
-					<chartLegend backgroundColor="#FFFFFF"/>
+					<chartLegend backgroundColor="#FFFFFF" position="Right">
+						<font size="8"/>
+					</chartLegend>
 				</chart>
 				<pieDataset>
 					<dataset resetType="Report">
@@ -129,10 +132,10 @@
 							<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{chartDataList})]]></dataSourceExpression>
 						</datasetRun>
 					</dataset>
-					<keyExpression><![CDATA[$F{category_chart}]]></keyExpression>
+					<keyExpression><![CDATA[$F{category_chart} + " (" + String.format("%.2f%%", $F{value_category_chart}) + ")"]]></keyExpression>
 					<valueExpression><![CDATA[$F{value_category_chart}]]></valueExpression>
 				</pieDataset>
-				<piePlot labelFormat="{0} {2}" legendLabelFormat="{0} {1}">
+				<piePlot labelFormat="{0}" legendLabelFormat="{0}">
 					<plot/>
 					<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
 				</piePlot>
@@ -146,7 +149,9 @@
 		<band height="125" splitType="Stretch"/>
 	</detail>
 	<pageFooter>
-		<band height="54" splitType="Stretch"/>
+		<band height="54" splitType="Stretch">
+			<printWhenExpression><![CDATA[$V{REPORT_COUNT} > 0]]></printWhenExpression>
+		</band>
 	</pageFooter>
 	<summary>
 		<band height="42" splitType="Stretch"/>

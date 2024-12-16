@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class DataPDFGenerator {
 
-    public static void generatePDF(MetricBO metricBO) throws JRException {
+    public static JasperPrint generatePDF(MetricBO metricBO) throws JRException {
         JasperReport jasReport = (JasperReport) JRLoader.loadObject(
                 new File("src/main/resources/Metrics_A4_Landscape.jasper"));
 
@@ -37,7 +37,7 @@ public class DataPDFGenerator {
 
 
         List<ChartData> chartDataList = List.of(
-          new ChartData("Vendas efetuadas", metricBO.porcentagemRenovacoes()),
+          new ChartData("Efetuadas", metricBO.porcentagemRenovacoes()),
           new ChartData("Pendentes", (100-metricBO.porcentagemRenovacoes())));
         params.put("chartDataList", chartDataList);
 
@@ -48,9 +48,14 @@ public class DataPDFGenerator {
         params.put("graficoQuantidadeVendas", chartDataSource);
 */
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasReport, params, new JREmptyDataSource());
+        /*
         //fixme mudar path
-        final var windowspath =  "D:\\Documents\\jasper-oldfiles\\relatorio-"+metricBO.signature()+".pdf";
+        //final var windowspath =  "D:\\Documents\\jasper-oldfiles\\relatorio-"+metricBO.signature()+".pdf";
         final var linuxpath = "/home/lucasbezerra/Downloads/unfinished/relatorio-"+metricBO.signature()+".pdf";
-        JasperExportManager.exportReportToPdfFile(jasperPrint, windowspath);
+
+
+        JasperExportManager.exportReportToPdfFile(jasperPrint, linuxpath);
+        */
+         return jasperPrint;
     }
 }
