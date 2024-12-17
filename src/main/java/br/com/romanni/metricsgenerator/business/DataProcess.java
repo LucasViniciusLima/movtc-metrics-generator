@@ -29,27 +29,29 @@ public class DataProcess {
 
     public void processCSV(String fileName) throws IOException, JRException {
         LocalDateTime initialDate = LocalDateTime.now();
-
         List<Costumer> costumers = getCostumersFromFile(fileName);
 
-        var jaspersPrints = List.of(
-        showData(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
-        showData(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
-        showData(costumers, SignatureLevel.GRUPO_VIRTUDE),
-        showData(costumers, SignatureLevel.PRIME),
-        showData(costumers, SignatureLevel.PRIME_PLUS_MOVT));
+        var jasperPrints = List.of(
+                showData(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
+                showData(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
+                showData(costumers, SignatureLevel.GRUPO_VIRTUDE),
+                showData(costumers, SignatureLevel.PRIME),
+                showData(costumers, SignatureLevel.PRIME_PLUS_MOVT));
 
         JRPdfExporter exporter = new JRPdfExporter();
-        exporter.setExporterInput(SimpleExporterInput.getInstance(jaspersPrints)); // Adiciona os JasperPrints
-        exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(new FileOutputStream("combined_report.pdf")));
+        exporter.setExporterInput(SimpleExporterInput.getInstance(jasperPrints));
 
-        // Exportar para PDF
+        exporter.setExporterOutput(new SimpleOutputStreamExporterOutput(new FileOutputStream(getExportPath(fileName))));
         exporter.exportReport();
 
         Duration duration = Duration.between(initialDate, LocalDateTime.now());
-
-        System.out.println("\nQuantidade de linhas lidas = "+ costumers.size());
+        System.out.println("\nQuantidade de linhas lidas = " + costumers.size());
         System.out.println(String.format("\n%d segundos e %d nanosegundos.\n\n", duration.getSeconds(), duration.getNano()));
+    }
+
+    private static String getExportPath(String fileName) {
+        String exportPath = fileName.substring(0,fileName.length()-3);
+        return exportPath + "pdf";
     }
 
     private List<Costumer> getCostumersFromFile(String fileName) throws IOException {
@@ -76,29 +78,29 @@ public class DataProcess {
 
         System.out.println(String.format("\n\n%s", signatureLevel));
         System.out.println(String.format("\nMês de %s", monthBr));
-        
+
         var totalCostumerList = getCostumerFilteredBySignature(costumers, signatureLevel);
         System.out.println(String.format("Total de membros: %d", totalCostumerList.size()));
-        
+
         var inRecoverFirstYearList = getSignaturesInRecoverFirstYear(costumers, signatureLevel);
         System.out.println(String.format("Membros novos (primeiro ano) com renovação próxima: %d", inRecoverFirstYearList.size()));
-        
+
         var inRecoverNotFirstYearList = getSignaturesInRecoverNotFirstYear(costumers, signatureLevel);
         System.out.println(String.format("Membros antigos com renovação próxima: %d", inRecoverNotFirstYearList.size()));
-        
+
         var inRecoverTotalSignaturesList = getSignaturesInRecover(costumers, signatureLevel);
         System.out.println(String.format("Total de membros com renovação próxima: %d", inRecoverTotalSignaturesList.size()));
-        
+
         var renewedSignaturesList = getSignaturesRecentRenewed(costumers, signatureLevel);
         System.out.println(String.format("Renovações (antigos) efetuadas: %d", renewedSignaturesList.size()));
-        
+
         var recentPurchasesList = getSignaturesRecentPurchases(costumers, signatureLevel);
         System.out.println(String.format("Novas vendas efetuadas: %d", recentPurchasesList.size()));
 
         var signatureRenewPercent = getSignaturesRenewPercent(inRecoverTotalSignaturesList.size(), renewedSignaturesList.size());
-        System.out.println("Porcentagem de renovações: "+ signatureRenewPercent);
+        System.out.println("Porcentagem de renovações: " + signatureRenewPercent);
 
-        final var metricBO =  new MetricBO(
+        final var metricBO = new MetricBO(
                 monthBr,
                 signatureLevel.toString(),
                 totalCostumerList.size(),
@@ -128,7 +130,7 @@ public class DataProcess {
     private List<Costumer> getSignaturesInRecoverNotFirstYear(List<Costumer> costumers, SignatureLevel signatureLevel) {
         return costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
-                .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate())&&!MOVTCMetricsDateUtil.isSignatureFirstYear(c))
+                .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate()) && !MOVTCMetricsDateUtil.isSignatureFirstYear(c))
                 .toList();
     }
 
@@ -142,14 +144,14 @@ public class DataProcess {
     private List<Costumer> getSignaturesRecentRenewed(List<Costumer> costumers, SignatureLevel signatureLevel) {
         return costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
-                .filter(c -> (c.getExpirationDate()!=null && MOVTCMetricsDateUtil.isRecentRenewed(c)))
+                .filter(c -> (c.getExpirationDate() != null && MOVTCMetricsDateUtil.isRecentRenewed(c)))
                 .toList();
     }
 
     private List<Costumer> getSignaturesRecentPurchases(List<Costumer> costumers, SignatureLevel signatureLevel) {
         return costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
-                .filter(c -> (c.getExpirationDate()!=null && MOVTCMetricsDateUtil.isRecentPurchase(c)))
+                .filter(c -> (c.getExpirationDate() != null && MOVTCMetricsDateUtil.isRecentPurchase(c)))
                 .toList();
     }
 
