@@ -32,11 +32,11 @@ public class DataProcess {
         List<Costumer> costumers = getCostumersFromFile(fileName);
 
         var jasperPrints = List.of(
-                showData(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
-                showData(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
-                showData(costumers, SignatureLevel.GRUPO_VIRTUDE),
-                showData(costumers, SignatureLevel.PRIME),
-                showData(costumers, SignatureLevel.PRIME_PLUS_MOVT));
+                createSignatureJasperPrint(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
+                createSignatureJasperPrint(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
+                createSignatureJasperPrint(costumers, SignatureLevel.GRUPO_VIRTUDE),
+                createSignatureJasperPrint(costumers, SignatureLevel.PRIME),
+                createSignatureJasperPrint(costumers, SignatureLevel.PRIME_PLUS_MOVT));
 
         JRPdfExporter exporter = new JRPdfExporter();
         exporter.setExporterInput(SimpleExporterInput.getInstance(jasperPrints));
@@ -70,7 +70,7 @@ public class DataProcess {
     }
 
     //fixme wriite data or change the intention of the method
-    private JasperPrint showData(List<Costumer> costumers, SignatureLevel signatureLevel) throws JRException {
+    private JasperPrint createSignatureJasperPrint(List<Costumer> costumers, SignatureLevel signatureLevel) throws JRException {
         String monthBr = MOVTCMetricsDateUtil
                 .getActualDate()
                 .getMonth()
@@ -101,6 +101,7 @@ public class DataProcess {
         System.out.println("Porcentagem de renovações: " + signatureRenewPercent);
 
         final var metricBO = new MetricBO(
+                renewedSignaturesList,
                 monthBr,
                 signatureLevel.toString(),
                 totalCostumerList.size(),

@@ -3,6 +3,7 @@ package br.com.romanni.metricsgenerator.business;
 import br.com.romanni.metricsgenerator.models.ChartData;
 import br.com.romanni.metricsgenerator.models.MetricBO;
 import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 
 import java.io.File;
@@ -33,29 +34,16 @@ public class DataPDFGenerator {
         params.put("porcentagemRenovacoes", bdPercentRenovacoes.doubleValue());
         params.put("month", metricBO.month());
 
-        //fixme refactor all this shit
+        //fixme refactor everything
 
 
         List<ChartData> chartDataList = List.of(
-          new ChartData("Efetuadas", metricBO.porcentagemRenovacoes()),
-          new ChartData("Pendentes", (100-metricBO.porcentagemRenovacoes())));
+                new ChartData("Efetuadas", metricBO.porcentagemRenovacoes()),
+                new ChartData("Pendentes", (100 - metricBO.porcentagemRenovacoes())));
         params.put("chartDataList", chartDataList);
 
-        /*
+        JRBeanCollectionDataSource datasource = new JRBeanCollectionDataSource(metricBO.costumers());
 
-        //JRBeanCollectionDataSource mainDataSource = new JRBeanCollectionDataSource(chartDataList);
-        JRBeanCollectionDataSource chartDataSource = new JRBeanCollectionDataSource(chartDataList);
-        params.put("graficoQuantidadeVendas", chartDataSource);
-*/
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jasReport, params, new JREmptyDataSource());
-        /*
-        //fixme mudar path
-        //final var windowspath =  "D:\\Documents\\jasper-oldfiles\\relatorio-"+metricBO.signature()+".pdf";
-        final var linuxpath = "/home/lucasbezerra/Downloads/unfinished/relatorio-"+metricBO.signature()+".pdf";
-
-
-        JasperExportManager.exportReportToPdfFile(jasperPrint, linuxpath);
-        */
-         return jasperPrint;
+        return JasperFillManager.fillReport(jasReport, params, datasource);
     }
 }

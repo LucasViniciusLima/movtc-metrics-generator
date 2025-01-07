@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.20.0.final using JasperReports Library version 6.20.0-2bc7ab61c56f459e8176eb05c7705e145cd400ad  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Metrics_A4_Landscape" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="69bf7980-efd2-44bc-8a82-ceae6bb8922f">
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Metrics_A4_Landscape" pageWidth="842" pageHeight="595" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="69bf7980-efd2-44bc-8a82-ceae6bb8922f">
 	<subDataset name="YourSubDataset" uuid="d8cf2d6e-1906-462c-ae17-6da1f4d52f3e">
 		<field name="category_chart" class="java.lang.String"/>
 		<field name="value_category_chart" class="java.lang.Double"/>
@@ -18,6 +18,9 @@
 		<defaultValueExpression><![CDATA[new ArrayList()]]></defaultValueExpression>
 	</parameter>
 	<parameter name="signatureLevel" class="java.lang.String"/>
+	<field name="fullName" class="java.lang.String"/>
+	<field name="email" class="java.lang.String"/>
+	<field name="expirationDate" class="java.time.LocalDateTime"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -151,17 +154,83 @@
 		</band>
 	</pageHeader>
 	<columnHeader>
-		<band height="61" splitType="Stretch"/>
+		<band height="35" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="0" y="3" width="280" height="30" forecolor="#FFFFFF" backcolor="#2E2E2E" uuid="56ef7439-3667-4aeb-a858-4c454c9cc285"/>
+				<box topPadding="5" leftPadding="8" bottomPadding="5" rightPadding="8">
+					<pen lineWidth="1.0" lineColor="#B8B8B8"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<text><![CDATA[Nome]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="280" y="3" width="300" height="30" forecolor="#FFFFFF" backcolor="#2E2E2E" uuid="9b4ec68a-2c3b-4285-a007-ec765bf2527f"/>
+				<box topPadding="5" leftPadding="8" bottomPadding="5" rightPadding="8">
+					<pen lineWidth="1.0" lineColor="#B8B8B8"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<text><![CDATA[Email]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="580" y="3" width="219" height="30" forecolor="#FFFFFF" backcolor="#2E2E2E" uuid="4dbf2316-9106-4542-9e33-038931958fb9"/>
+				<box topPadding="5" leftPadding="8" bottomPadding="5" rightPadding="8">
+					<pen lineWidth="1.0" lineColor="#B8B8B8"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="SansSerif" size="9"/>
+				</textElement>
+				<text><![CDATA[Vencimento Assinatura]]></text>
+			</staticText>
+		</band>
 	</columnHeader>
 	<detail>
-		<band height="125" splitType="Stretch"/>
-	</detail>
-	<pageFooter>
-		<band height="54" splitType="Stretch">
-			<printWhenExpression><![CDATA[$V{REPORT_COUNT} > 0]]></printWhenExpression>
+		<band height="16" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="280" height="16" uuid="9ac2defe-f824-4f0f-a415-288b25d31db5"/>
+				<box topPadding="1" leftPadding="4" bottomPadding="1" rightPadding="4">
+					<pen lineWidth="0.25" lineColor="#FF8A05"/>
+					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{fullName}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="280" y="0" width="300" height="16" uuid="890df9aa-fa97-4c29-a6d8-cb050ce62959"/>
+				<box topPadding="1" leftPadding="4" bottomPadding="1" rightPadding="4">
+					<pen lineWidth="0.25" lineColor="#FF8A05"/>
+					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="580" y="0" width="219" height="16" uuid="8b69ddf8-1b98-456d-bd3b-d1bcd4bb55a8"/>
+				<box topPadding="1" leftPadding="4" bottomPadding="1" rightPadding="4">
+					<pen lineWidth="0.25" lineColor="#FF8A05"/>
+					<topPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.25" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{expirationDate}.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yy"))]]></textFieldExpression>
+			</textField>
 		</band>
-	</pageFooter>
-	<summary>
-		<band height="42" splitType="Stretch"/>
-	</summary>
+	</detail>
 </jasperReport>
