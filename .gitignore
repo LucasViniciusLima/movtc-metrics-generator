@@ -2,6 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+out/
 
 ### STS ###
 .apt_generated
@@ -39,3 +40,9 @@ build/
 *.env
 !sample.env
 !*sample.env
+
+### META-INF ###
+src/main/resources/META-INF/
+
+### dependency-reduced maven shaded ###
+dependency-reduced-pom.xml
