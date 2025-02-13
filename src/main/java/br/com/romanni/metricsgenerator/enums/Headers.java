@@ -13,7 +13,8 @@ public enum Headers {
     NIVEL_DE_ASSINATURA("Nível de Assinatura"),
     STATUS("Status"),
     DATA_DE_EXPIRACAO("Data de expiração"),
-    DATA_DE_CRIACA("Data de criação");
+    DATA_DE_CRIACA("Data de criação"),
+    PHONE_NUMBER("Telefone");
 
     private final String value;
 

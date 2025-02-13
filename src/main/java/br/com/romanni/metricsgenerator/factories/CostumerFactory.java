@@ -23,6 +23,7 @@ public class CostumerFactory {
                 .status(CostumerStatus.getCostumerStatus(record.get(Headers.STATUS)))
                 .expirationDate(this.mapLocalDateStringToLocalDateTime(record.get(Headers.DATA_DE_EXPIRACAO)))
                 .createdDate(this.mapToLocalDateTime(record.get(Headers.DATA_DE_CRIACA)))
+                .phone(record.get(Headers.PHONE_NUMBER)!=null?record.get(Headers.PHONE_NUMBER):"vazio")
                 .build();
     }
 
@@ -35,6 +36,10 @@ public class CostumerFactory {
 
         if (dateParts.length != 3) {
             return null;
+        }
+
+        if (dateParts[2].length() > 2) {
+            dateParts[2] = dateParts[2].substring(0, 2);
         }
 
         final var dateIntRecord = this.mapToDateIntRecordShort(dateParts);
@@ -86,11 +91,5 @@ public class CostumerFactory {
         int day = Integer.parseInt(localDateParts[2]);
         return new DateIntRecord(year, month, day, 0, 0, 0);
     }
-
-
-
-
-
-
 
 }
