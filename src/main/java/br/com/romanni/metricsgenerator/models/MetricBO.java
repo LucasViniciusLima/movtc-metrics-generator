@@ -3,7 +3,8 @@ package br.com.romanni.metricsgenerator.models;
 import java.util.List;
 
 public record MetricBO(
-        List<Costumer> costumers,
+        List<Costumer> costumersInRecover,
+        List<Costumer> costumersRenewed,
         String month,
         String signature,
         int totalMembros,

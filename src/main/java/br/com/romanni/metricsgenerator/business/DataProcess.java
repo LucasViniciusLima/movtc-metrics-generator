@@ -6,6 +6,7 @@ import br.com.romanni.metricsgenerator.factories.CostumerFactory;
 import br.com.romanni.metricsgenerator.models.Costumer;
 import br.com.romanni.metricsgenerator.models.MetricBO;
 import br.com.romanni.metricsgenerator.utils.MOVTCMetricsDateUtil;
+import lombok.SneakyThrows;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.TextStyle;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class DataProcess {
@@ -31,12 +33,7 @@ public class DataProcess {
         LocalDateTime initialDate = LocalDateTime.now();
         List<Costumer> costumers = getCostumersFromFile(fileName);
 
-        var jasperPrints = List.of(
-                createSignatureJasperPrint(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
-                createSignatureJasperPrint(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
-                createSignatureJasperPrint(costumers, SignatureLevel.GRUPO_VIRTUDE),
-                createSignatureJasperPrint(costumers, SignatureLevel.PRIME),
-                createSignatureJasperPrint(costumers, SignatureLevel.PRIME_PLUS_MOVT));
+        var jasperPrints = generateJasperPrintFromEachSignatureAndStatus(costumers);
 
         JRPdfExporter exporter = new JRPdfExporter();
         exporter.setExporterInput(SimpleExporterInput.getInstance(jasperPrints));
@@ -50,7 +47,7 @@ public class DataProcess {
     }
 
     private static String getExportPath(String fileName) {
-        String exportPath = fileName.substring(0,fileName.length()-3);
+        String exportPath = fileName.substring(0, fileName.length() - 3);
         return exportPath + "pdf";
     }
 
@@ -69,8 +66,36 @@ public class DataProcess {
                 .toList();
     }
 
-    //fixme wriite data or change the intention of the method
-    private JasperPrint createSignatureJasperPrint(List<Costumer> costumers, SignatureLevel signatureLevel) throws JRException {
+    private List<JasperPrint> generateJasperPrintFromEachSignatureAndStatus(List<Costumer> costumers) {
+        List<MetricBO> metricBOList = List.of(
+                createMovtBO(costumers, SignatureLevel.NEOPSICOLOGIA_MOVIMENTO_TRANSFORMACIONAL),
+                createMovtBO(costumers, SignatureLevel.AUTOCONHECIMENTO_E_ATENDIMENTO_INDIVIDUAL),
+                createMovtBO(costumers, SignatureLevel.PRIME),
+                createMovtBO(costumers, SignatureLevel.GRUPO_VIRTUDE),
+                createMovtBO(costumers, SignatureLevel.PRIME_PLUS_MOVT));
+
+        return metricBOList.stream()
+                .flatMap(mBO -> {
+                    try {
+                        return getRenewedAndRecoverJasperPrint(mBO);
+                    } catch (JRException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+    }
+
+    private Stream<JasperPrint> getRenewedAndRecoverJasperPrint(MetricBO metricBO) throws JRException {
+        String signatureRecoverName = String.format("[PENDENTES / EM RECUPERAÇÃO] %s", metricBO.signature());
+        JasperPrint costumersRenewed = DataPDFGenerator.generateJasperPrint(metricBO.signature(), metricBO, metricBO.costumersRenewed());
+        JasperPrint costumersInRecover = DataPDFGenerator.generateJasperPrint(signatureRecoverName, metricBO, metricBO.costumersInRecover());
+        return List.of(
+                costumersRenewed,
+                costumersInRecover
+        ).stream();
+    }
+
+    private MetricBO createMovtBO(List<Costumer> costumers, SignatureLevel signatureLevel) {
         String monthBr = MOVTCMetricsDateUtil
                 .getActualDate()
                 .getMonth()
@@ -80,27 +105,17 @@ public class DataProcess {
         System.out.println(String.format("\nMês de %s", monthBr));
 
         var totalCostumerList = getCostumerFilteredBySignature(costumers, signatureLevel);
-        System.out.println(String.format("Total de membros: %d", totalCostumerList.size()));
-
         var inRecoverFirstYearList = getSignaturesInRecoverFirstYear(costumers, signatureLevel);
-        System.out.println(String.format("Membros novos (primeiro ano) com renovação próxima: %d", inRecoverFirstYearList.size()));
-
         var inRecoverNotFirstYearList = getSignaturesInRecoverNotFirstYear(costumers, signatureLevel);
-        System.out.println(String.format("Membros antigos com renovação próxima: %d", inRecoverNotFirstYearList.size()));
-
         var inRecoverTotalSignaturesList = getSignaturesInRecover(costumers, signatureLevel);
-        System.out.println(String.format("Total de membros com renovação próxima: %d", inRecoverTotalSignaturesList.size()));
-
         var renewedSignaturesList = getSignaturesRecentRenewed(costumers, signatureLevel);
-        System.out.println(String.format("Renovações (antigos) efetuadas: %d", renewedSignaturesList.size()));
-
         var recentPurchasesList = getSignaturesRecentPurchases(costumers, signatureLevel);
-        System.out.println(String.format("Novas vendas efetuadas: %d", recentPurchasesList.size()));
-
         var signatureRenewPercent = getSignaturesRenewPercent(inRecoverTotalSignaturesList.size(), renewedSignaturesList.size());
+
         System.out.println("Porcentagem de renovações: " + signatureRenewPercent);
 
-        final var metricBO = new MetricBO(
+        return new MetricBO(
+                inRecoverTotalSignaturesList,
                 renewedSignaturesList,
                 monthBr,
                 signatureLevel.toString(),
@@ -111,49 +126,65 @@ public class DataProcess {
                 renewedSignaturesList.size(),
                 recentPurchasesList.size(),
                 signatureRenewPercent);
-
-        return DataPDFGenerator.generatePDF(metricBO);
     }
 
     private List<Costumer> getCostumerFilteredBySignature(List<Costumer> costumers, SignatureLevel signatureLevel) {
-        return costumers.stream()
+        final var costumersFiltered = costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
                 .toList();
+
+        System.out.println(String.format("Total de membros: %d", costumersFiltered.size()));
+        return costumersFiltered;
     }
 
     private List<Costumer> getSignaturesInRecover(List<Costumer> costumers, SignatureLevel signatureLevel) {
-        return costumers.stream()
+        final var costumersFiltered = costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
                 .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate()))
                 .toList();
+
+        System.out.println(String.format("Total de membros com renovação próxima: %d", costumersFiltered.size()));
+        return costumersFiltered;
     }
 
     private List<Costumer> getSignaturesInRecoverNotFirstYear(List<Costumer> costumers, SignatureLevel signatureLevel) {
-        return costumers.stream()
+        final var costumersFiltered = costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
                 .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate()) && !MOVTCMetricsDateUtil.isSignatureFirstYear(c))
                 .toList();
+
+        System.out.println(String.format("Membros antigos com renovação próxima: %d", costumersFiltered.size()));
+        return costumersFiltered;
     }
 
     private List<Costumer> getSignaturesInRecoverFirstYear(List<Costumer> costumers, SignatureLevel signatureLevel) {
-        return costumers.stream()
+        final var costumersFiltered = costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
                 .filter(c -> MOVTCMetricsDateUtil.isInRecoveryMonthTime(c.getExpirationDate()) && MOVTCMetricsDateUtil.isSignatureFirstYear(c))
                 .toList();
+
+        System.out.println(String.format("Membros novos (primeiro ano) com renovação próxima: %d", costumersFiltered.size()));
+        return costumersFiltered;
     }
 
     private List<Costumer> getSignaturesRecentRenewed(List<Costumer> costumers, SignatureLevel signatureLevel) {
-        return costumers.stream()
+        final var costumersFiltered = costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
                 .filter(c -> (c.getExpirationDate() != null && MOVTCMetricsDateUtil.isRecentRenewed(c)))
                 .toList();
+
+        System.out.println(String.format("Renovações (antigos) efetuadas: %d", costumersFiltered.size()));
+        return costumersFiltered;
     }
 
     private List<Costumer> getSignaturesRecentPurchases(List<Costumer> costumers, SignatureLevel signatureLevel) {
-        return costumers.stream()
+        final var costumersFiltered = costumers.stream()
                 .filter(c -> c.getSignatureLevel().equals(signatureLevel))
                 .filter(c -> (c.getExpirationDate() != null && MOVTCMetricsDateUtil.isRecentPurchase(c)))
                 .toList();
+
+        System.out.println(String.format("Novas vendas efetuadas: %d", costumersFiltered.size()));
+        return costumersFiltered;
     }
 
     private double getSignaturesRenewPercent(int openSignatures, int renewedSignatures) {
