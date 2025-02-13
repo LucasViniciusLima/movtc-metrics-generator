@@ -23,7 +23,7 @@ public class CostumerFactory {
                 .status(CostumerStatus.getCostumerStatus(record.get(Headers.STATUS)))
                 .expirationDate(this.mapLocalDateStringToLocalDateTime(record.get(Headers.DATA_DE_EXPIRACAO)))
                 .createdDate(this.mapToLocalDateTime(record.get(Headers.DATA_DE_CRIACA)))
-                .phone(record.get(Headers.PHONE_NUMBER)!=null?record.get(Headers.PHONE_NUMBER):"vazio")
+                .phone(phoneExist(record.get(Headers.PHONE_NUMBER)) ?record.get(Headers.PHONE_NUMBER):"vazio")
                 .build();
     }
 
@@ -90,6 +90,10 @@ public class CostumerFactory {
         int month = Integer.parseInt(localDateParts[1]);
         int day = Integer.parseInt(localDateParts[2]);
         return new DateIntRecord(year, month, day, 0, 0, 0);
+    }
+
+    private Boolean phoneExist(String phoneNumber){
+        return phoneNumber !=null && !phoneNumber.isBlank() && !phoneNumber.isEmpty();
     }
 
 }

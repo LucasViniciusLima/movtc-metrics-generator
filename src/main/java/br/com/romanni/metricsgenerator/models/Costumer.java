@@ -15,7 +15,7 @@ public class Costumer {
 
     private String fullName;
     private String email;
-    private String phone;
+    private String phone = "vazio";
     private LocalDateTime actualLoginAt;
     private LocalDateTime lastSeenAt;
     private SignatureLevel signatureLevel;
