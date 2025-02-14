@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Headers {
+    ID("Id"),
     NOME_COMPLETO("Nome completo"),
     E_MAIL("E-mail"),
     LOGIN_ATUAL_EM("Login atual em"),
@@ -14,7 +15,10 @@ public enum Headers {
     STATUS("Status"),
     DATA_DE_EXPIRACAO("Data de expiração"),
     DATA_DE_CRIACA("Data de criação"),
-    PHONE_NUMBER("Telefone");
+    PHONE_NUMBER("Telefone"),
+    CONTADOR_LOGINS("Contador de logins"),
+    CRIADO_EM("Criado em"),
+    CPF_CNPJ("CPF/CNPJ");
 
     private final String value;
 

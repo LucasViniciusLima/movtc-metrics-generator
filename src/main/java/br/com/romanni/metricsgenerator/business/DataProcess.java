@@ -31,7 +31,10 @@ public class DataProcess {
 
     public void processCSV(String fileName) throws IOException, JRException {
         LocalDateTime initialDate = LocalDateTime.now();
+        List<Costumer> allCostumersWithNumber = getCostumersFromFile("src/main/resources/basePhones.csv");
+
         List<Costumer> costumers = getCostumersFromFile(fileName);
+        allCostumersWithNumber.forEach(c -> System.out.println(c.getPhone()));
 
         var jasperPrints = generateJasperPrintFromEachSignatureAndStatus(costumers);
 
@@ -89,10 +92,10 @@ public class DataProcess {
         String signatureRecoverName = String.format("[PENDENTES / EM RECUPERAÇÃO] %s", metricBO.signature());
         JasperPrint costumersRenewed = DataPDFGenerator.generateJasperPrint(metricBO.signature(), metricBO, metricBO.costumersRenewed());
         JasperPrint costumersInRecover = DataPDFGenerator.generateJasperPrint(signatureRecoverName, metricBO, metricBO.costumersInRecover());
-        return List.of(
+        return Stream.of(
                 costumersRenewed,
                 costumersInRecover
-        ).stream();
+        );
     }
 
     private MetricBO createMovtBO(List<Costumer> costumers, SignatureLevel signatureLevel) {
