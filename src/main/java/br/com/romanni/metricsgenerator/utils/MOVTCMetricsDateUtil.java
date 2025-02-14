@@ -7,8 +7,11 @@ import java.time.LocalDateTime;
 
 public class MOVTCMetricsDateUtil {
 
-    private static LocalDateTime actualDate = LocalDateTime.now().minusMonths(1);//fixme
+    private static LocalDateTime actualDate = LocalDateTime.now();
 
+    public static void setActualDateToLastMonth() {
+        actualDate = actualDate.minusMonths(1);
+    }
 
     public static boolean isInRecoveryMonthTime(LocalDateTime date) {
         if (date == null) return false;

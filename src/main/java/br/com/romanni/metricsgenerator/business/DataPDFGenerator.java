@@ -15,11 +15,14 @@ import java.util.List;
 import java.util.Map;
 
 public class DataPDFGenerator {
+
+    private final static String JASPER_RESOURCE_FILE = "src/main/resources/Metrics_A4_Landscape.jasper";
+
     private DataPDFGenerator() {}
 
     public static JasperPrint generateJasperPrint(String signatureName, MetricBO metricBO, List<Costumer> costumersToPrint) throws JRException {
         JasperReport jasReport = (JasperReport) JRLoader.loadObject(
-                new File("src/main/resources/Metrics_A4_Landscape.jasper"));
+                new File(JASPER_RESOURCE_FILE));
 
         double percentRenovacoes = BigDecimal.valueOf(metricBO.porcentagemRenovacoes())
                 .setScale(2, RoundingMode.HALF_EVEN)

@@ -1,7 +1,8 @@
 package br.com.romanni.metricsgenerator.factories;
 
 import br.com.romanni.metricsgenerator.enums.CostumerStatus;
-import br.com.romanni.metricsgenerator.enums.Headers;
+import br.com.romanni.metricsgenerator.enums.HeaderBase;
+import br.com.romanni.metricsgenerator.enums.HeaderSignature;
 import br.com.romanni.metricsgenerator.enums.SignatureLevel;
 import br.com.romanni.metricsgenerator.models.Costumer;
 import br.com.romanni.metricsgenerator.models.DateIntRecord;
@@ -13,33 +14,33 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CostumerFactory {
 
-    public Costumer create(CSVRecord costumerCSVRecord){
-        if (columnIsMappedOnCSV(costumerCSVRecord, Headers.PHONE_NUMBER)) {//fixme doesnt verify correctly
+    public Costumer create(CSVRecord costumerCSVRecord) {
+        if (isBaseCostumerSimplified(costumerCSVRecord)) {
             return createSimplifiedCostumer(costumerCSVRecord);
         }
 
         return Costumer.builder()
-                .fullName(costumerCSVRecord.get(Headers.NOME_COMPLETO))
-                .email(costumerCSVRecord.get(Headers.E_MAIL))
-                .actualLoginAt(columnIsMappedOnCSV(costumerCSVRecord, Headers.LOGIN_ATUAL_EM) ? this.mapToLocalDateTime(costumerCSVRecord.get(Headers.LOGIN_ATUAL_EM)) : null)
-                .lastSeenAt(columnIsMappedOnCSV(costumerCSVRecord, Headers.ULTIMA_VEZ_VISTO) ? this.mapToLocalDateTime(costumerCSVRecord.get(Headers.ULTIMA_VEZ_VISTO)): null)
-                .signatureLevel(columnIsMappedOnCSV(costumerCSVRecord, Headers.NIVEL_DE_ASSINATURA) ? SignatureLevel.getSignatureLevel(costumerCSVRecord.get(Headers.NIVEL_DE_ASSINATURA)): SignatureLevel.INVALID)
-                .status(columnIsMappedOnCSV(costumerCSVRecord, Headers.STATUS) ? CostumerStatus.getCostumerStatus(costumerCSVRecord.get(Headers.STATUS)): null)
-                .expirationDate(columnIsMappedOnCSV(costumerCSVRecord, Headers.DATA_DE_EXPIRACAO) ? this.mapLocalDateStringToLocalDateTime(costumerCSVRecord.get(Headers.DATA_DE_EXPIRACAO)): null)
-                .createdDate(columnIsMappedOnCSV(costumerCSVRecord, Headers.DATA_DE_CRIACA) ? this.mapToLocalDateTime(costumerCSVRecord.get(Headers.DATA_DE_CRIACA)): null)
+                .fullName(costumerCSVRecord.get(HeaderSignature.NOME_COMPLETO))
+                .email(costumerCSVRecord.get(HeaderSignature.E_MAIL))
+                .actualLoginAt(this.mapToLocalDateTime(costumerCSVRecord.get(HeaderSignature.LOGIN_ATUAL_EM)))
+                .lastSeenAt(this.mapToLocalDateTime(costumerCSVRecord.get(HeaderSignature.ULTIMA_VEZ_VISTO)))
+                .signatureLevel(SignatureLevel.getSignatureLevel(costumerCSVRecord.get(HeaderSignature.NIVEL_DE_ASSINATURA)))
+                .status(CostumerStatus.getCostumerStatus(costumerCSVRecord.get(HeaderSignature.STATUS)))
+                .expirationDate(this.mapLocalDateStringToLocalDateTime(costumerCSVRecord.get(HeaderSignature.DATA_DE_EXPIRACAO)))
+                .createdDate(this.mapToLocalDateTime(costumerCSVRecord.get(HeaderSignature.DATA_DE_CRIACAO)))
                 .phone("vazio")
                 .build();
     }
 
     public Costumer createSimplifiedCostumer(CSVRecord costumerCSVRecord) {
         return Costumer.builder()
-                .fullName(costumerCSVRecord.get(Headers.NOME_COMPLETO))
-                .email(costumerCSVRecord.get(Headers.E_MAIL))
-                .phone(Boolean.TRUE.equals(phoneExist(costumerCSVRecord)) ? costumerCSVRecord.get(Headers.PHONE_NUMBER) : "nnn")
+                .fullName(costumerCSVRecord.get(HeaderSignature.NOME_COMPLETO))
+                .email(costumerCSVRecord.get(HeaderSignature.E_MAIL))
+                .phone(Boolean.TRUE.equals(phoneExist(costumerCSVRecord)) ? costumerCSVRecord.get(HeaderBase.PHONE_NUMBER) : "vazio")
                 .build();
     }
 
-    private LocalDateTime mapLocalDateStringToLocalDateTime(String dateString){
+    private LocalDateTime mapLocalDateStringToLocalDateTime(String dateString) {
         if (dateString.length() < 10) {
             return null;
         }
@@ -104,16 +105,22 @@ public class CostumerFactory {
         return new DateIntRecord(year, month, day, 0, 0, 0);
     }
 
-    private boolean phoneExist(CSVRecord costumerCSVRecord){
-        if (!columnIsMappedOnCSV(costumerCSVRecord, Headers.PHONE_NUMBER)){
+    private boolean phoneExist(CSVRecord costumerCSVRecord) {
+        if (!columnIsMappedOnCSV(costumerCSVRecord, HeaderBase.PHONE_NUMBER.name())) {
             return false;
         }
-        String phoneNumber = costumerCSVRecord.get(Headers.PHONE_NUMBER);
+        String phoneNumber = costumerCSVRecord.get(HeaderBase.PHONE_NUMBER);
         return phoneNumber != null && !phoneNumber.isBlank() && !phoneNumber.isEmpty();
     }
 
-    private boolean columnIsMappedOnCSV(CSVRecord costumerCSVRecord, Headers header) {
-        return costumerCSVRecord.isMapped(header.getValue());
+    private boolean columnIsMappedOnCSV(CSVRecord costumerCSVRecord, String header) {
+        return costumerCSVRecord.isMapped(header);
+    }
+
+    private boolean isBaseCostumerSimplified(CSVRecord costumerCSVRecord) {
+        boolean signatureNotMapped = !columnIsMappedOnCSV(costumerCSVRecord, HeaderSignature.NIVEL_DE_ASSINATURA.name());
+        boolean phoneNumberMapped = costumerCSVRecord.isMapped(HeaderBase.PHONE_NUMBER.name());
+        return signatureNotMapped && phoneNumberMapped;
     }
 
 }

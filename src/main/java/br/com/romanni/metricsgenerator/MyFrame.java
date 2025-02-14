@@ -13,11 +13,13 @@ public class MyFrame extends JFrame implements ActionListener {
 
     JButton button;
     DataProcess dataProcess = new DataProcess();
+    JCheckBox checkBoxMesAtual, checkBoxMesPassado;
+    boolean actualMonth = true;
 
     public MyFrame() {
         this.setTitle("Metrics Generator");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setSize(500, 200);
+        this.setSize(600, 275);
         this.setLayout(new BoxLayout(this.getContentPane(), BoxLayout.Y_AXIS));
 
         JLabel label = this.generateLabel();
@@ -26,7 +28,11 @@ public class MyFrame extends JFrame implements ActionListener {
         this.add(Box.createRigidArea(new Dimension(0,30)));
         this.add(label);
 
+        generateCheckBoxes();
         generateJButton();
+
+        this.add(checkBoxMesAtual);
+        this.add(checkBoxMesPassado);
 
         this.add(Box.createRigidArea(new Dimension(0,20)));
         this.add(button);
@@ -36,10 +42,28 @@ public class MyFrame extends JFrame implements ActionListener {
 
     private JLabel generateLabel() {
         JLabel label = new JLabel();
-        label.setText("Selecione o arquivo para gerar as métricas!");
+        label.setText("Selecione mês e arquivo para gerar as métricas!");
         label.setFont(new Font("Arial", Font.BOLD, 22));
         label.setHorizontalAlignment(SwingConstants.CENTER);
         return label;
+    }
+
+    public void generateCheckBoxes() {
+        checkBoxMesAtual = new JCheckBox("Mês atual", actualMonth);
+        checkBoxMesPassado = new JCheckBox("Mês passado", !actualMonth);
+
+        checkBoxMesAtual.setFont(new Font("Arial", Font.BOLD, 18));
+        checkBoxMesPassado.setFont(new Font("Arial", Font.BOLD, 18));
+
+        checkBoxMesAtual.addActionListener(e -> {
+            actualMonth = ((JCheckBox) e.getSource()).isSelected();
+            checkBoxMesPassado.setSelected(!actualMonth);
+        });
+
+        checkBoxMesPassado.addActionListener(e -> {
+            actualMonth = !((JCheckBox) e.getSource()).isSelected();
+            checkBoxMesAtual.setSelected(actualMonth);
+        });
     }
 
     public void generateJButton() {
@@ -67,13 +91,14 @@ public class MyFrame extends JFrame implements ActionListener {
             if (response == JFileChooser.APPROVE_OPTION) {
                 var path = fileChooser.getSelectedFile().getAbsolutePath();
                 System.out.println(path);
-                this.dataProcess.processCSV(path);
+                this.dataProcess.processCSV(path, actualMonth);
             }
         } catch (IOException ex) {
             System.out.println(ex.getMessage());
         } catch (JRException ex) {
             System.out.println(ex.getMessage());
         }
-
     }
+
+
 }

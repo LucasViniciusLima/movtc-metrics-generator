@@ -1,12 +1,12 @@
 package br.com.romanni.metricsgenerator.business;
 
-import br.com.romanni.metricsgenerator.enums.Headers;
+import br.com.romanni.metricsgenerator.enums.HeaderBase;
+import br.com.romanni.metricsgenerator.enums.HeaderSignature;
 import br.com.romanni.metricsgenerator.enums.SignatureLevel;
 import br.com.romanni.metricsgenerator.factories.CostumerFactory;
 import br.com.romanni.metricsgenerator.models.Costumer;
 import br.com.romanni.metricsgenerator.models.MetricBO;
 import br.com.romanni.metricsgenerator.utils.MOVTCMetricsDateUtil;
-import lombok.SneakyThrows;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
@@ -29,12 +29,16 @@ import java.util.stream.StreamSupport;
 
 public class DataProcess {
 
-    public void processCSV(String fileName) throws IOException, JRException {
-        LocalDateTime initialDate = LocalDateTime.now();
-        List<Costumer> allCostumersWithNumber = getCostumersFromFile("src/main/resources/basePhones.csv");
+    private static final String BASE_PHONE_FILES = "src/main/resources/basePhones.csv";
 
-        List<Costumer> costumers = getCostumersFromFile(fileName);
-        allCostumersWithNumber.forEach(c -> System.out.println(c.getPhone()));
+    public void processCSV(String fileName, boolean actualMonth) throws IOException, JRException {
+        LocalDateTime initialDate = LocalDateTime.now();
+        handleMetricMonthGoal(actualMonth);
+
+        List<Costumer> allCostumersWithNumber = getCostumersFromFile(BASE_PHONE_FILES, HeaderBase.class);
+        List<Costumer> costumers = getCostumersFromFile(fileName, HeaderSignature.class).stream()
+                .map(costumer -> this.updateCostumerPhoneIfOnList(costumer, allCostumersWithNumber))
+                .toList();
 
         var jasperPrints = generateJasperPrintFromEachSignatureAndStatus(costumers);
 
@@ -45,8 +49,8 @@ public class DataProcess {
         exporter.exportReport();
 
         Duration duration = Duration.between(initialDate, LocalDateTime.now());
-        System.out.println("\nQuantidade de linhas lidas = " + costumers.size());
-        System.out.println(String.format("\n%d segundos e %d nanosegundos.\n\n", duration.getSeconds(), duration.getNano()));
+        System.out.println(String.format("%nQuantidade de linhas lidas = %d", costumers.size()));
+        System.out.println(String.format("%n%d segundos e %d nanosegundos.%n", duration.getSeconds(), duration.getNano()));
     }
 
     private static String getExportPath(String fileName) {
@@ -54,12 +58,12 @@ public class DataProcess {
         return exportPath + "pdf";
     }
 
-    private List<Costumer> getCostumersFromFile(String fileName) throws IOException {
+    private List<Costumer> getCostumersFromFile(String fileName, Class classReader) throws IOException {
         CostumerFactory costumerFactory = new CostumerFactory();
         Reader in = new FileReader(fileName);
 
         Iterable<CSVRecord> records = CSVFormat.RFC4180.builder()
-                .setHeader(Headers.class)
+                .setHeader(classReader)
                 .setSkipHeaderRecord(true)
                 .build()
                 .parse(in);
@@ -104,8 +108,8 @@ public class DataProcess {
                 .getMonth()
                 .getDisplayName(TextStyle.FULL, new Locale("pt", "BR"));
 
-        System.out.println(String.format("\n\n%s", signatureLevel));
-        System.out.println(String.format("\nMês de %s", monthBr));
+        System.out.println(String.format("%n%n%s", signatureLevel));
+        System.out.println(String.format("%nMês de %s", monthBr));
 
         var totalCostumerList = getCostumerFilteredBySignature(costumers, signatureLevel);
         var inRecoverFirstYearList = getSignaturesInRecoverFirstYear(costumers, signatureLevel);
@@ -199,4 +203,21 @@ public class DataProcess {
         return (renewedSignatures * 100) / totalSignatures;
     }
 
+    private boolean isNullOrEmptyOrBlank(String str) {
+        return str == null || str.isEmpty() || str.isBlank();
+    }
+
+    private void handleMetricMonthGoal(boolean actualMonth) {
+        if (!actualMonth) {
+            MOVTCMetricsDateUtil.setActualDateToLastMonth();
+        }
+    }
+
+    private Costumer updateCostumerPhoneIfOnList(Costumer costumer, List<Costumer> costumers) {
+        costumers.stream()
+                .filter(cos -> cos.getEmail().equals(costumer.getEmail()) && !isNullOrEmptyOrBlank(cos.getPhone()))
+                .findFirst()
+                .ifPresent(cos -> costumer.setPhone(cos.getPhone()));
+        return costumer;
+    }
 }
